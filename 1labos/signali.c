@@ -1,25 +1,31 @@
+// Bruno Cavor, 0036557489
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <signal.h>
 #include <string.h>
 
 #define ANSI_COLOR_ORANGE "\x1b[38;5;214m"
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_YELLOW  "\x1b[33m" // Boje za tekst
-#define ANSI_COLOR_RESET   "\x1b[0m"
+#define ANSI_COLOR_RED "\x1b[31m"
+#define ANSI_COLOR_GREEN "\x1b[32m"
+#define ANSI_COLOR_YELLOW "\x1b[33m" // Boje za tekst
+#define ANSI_COLOR_RESET "\x1b[0m"
 
-int maxIndex(int lista[]){ // Traži najveću podignutu zastavicu
-    for(int i=4; i >= 0; i--){
-        if(lista[i] == 1){
+int maxIndex(int lista[])
+{ // Traži najveću podignutu zastavicu
+    for (int i = 4; i >= 0; i--)
+    {
+        if (lista[i] == 1)
+        {
             return i;
         }
     }
     return -1;
 }
 
-void printer(int lista[], int stanje, int stog[]){ // Ispisuje stanja stoga, T_P i K_Z
+void printer(int lista[], int stanje, int stog[])
+{ // Ispisuje stanja stoga, T_P i K_Z
     printf("\n=============== PRIKAZ STANJA ===============\n");
     printf("T_P: " ANSI_COLOR_YELLOW "%d" ANSI_COLOR_RESET "\n", stanje);
     printf("K_Z: [" ANSI_COLOR_GREEN "%d, %d, %d, %d, %d" ANSI_COLOR_RESET "]\n", lista[0], lista[1], lista[2], lista[3], lista[4]);
@@ -47,7 +53,7 @@ int main()
     act.sa_handler = unos_prekid; /* kojom se funkcijom signal obrađuje SIGUSR1*/
     sigemptyset(&act.sa_mask);
     sigaddset(&act.sa_mask, SIGTERM);
-    act.sa_flags = SA_NODEFER;   
+    act.sa_flags = SA_NODEFER;
     sigaction(SIGUSR1, &act, NULL);
 
     act.sa_handler = obradi_sigterm; /* kojom se funkcijom signal obrađuje SIGTERM*/
@@ -64,7 +70,11 @@ int main()
     {
         printf("Program: iteracija %d\n", i++);
         T_P = 0;
-        K_Z[0] = 0; K_Z[1] = 0; K_Z[2] = 0; K_Z[3] = 0; K_Z[4] = 0;
+        K_Z[0] = 0;
+        K_Z[1] = 0;
+        K_Z[2] = 0;
+        K_Z[3] = 0;
+        K_Z[4] = 0;
         sleep(1);
     }
 
@@ -75,10 +85,11 @@ int main()
 void unos_prekid(int sig) // Unos prioriteta
 {
     printf("-------------------------------------\n");
-    printf(ANSI_COLOR_RED   "Unesi prekid (1 - 5); "     ANSI_COLOR_RESET);
+    printf(ANSI_COLOR_RED "Unesi prekid (1 - 5); " ANSI_COLOR_RESET);
     scanf("%d", &temp);
 
-    if(temp > 5 || temp < 0){ // Provjera ispravnosti unosa
+    if (temp > 5 || temp < 0)
+    { // Provjera ispravnosti unosa
         printf("Neispravan unos\n");
         return;
     }
@@ -103,20 +114,22 @@ void obrada_prekida(int T_P) // Ispis obrade prekida
 {
     printf("\n");
 
-    for(int i = 1; i <= 5; i++){
-        printf(ANSI_COLOR_ORANGE     "Obrada signala %d, %d/5!"     ANSI_COLOR_RESET "\n", T_P, i);
-        sleep(1.5);
+    for (int i = 1; i <= 5; i++)
+    {
+        printf(ANSI_COLOR_ORANGE "Obrada signala %d, %d/5!" ANSI_COLOR_RESET "\n", T_P, i);
+        sleep(1.7);
     }
 
     printf("Kraj obrade signala %d\n", T_P);
 }
 
 void selektor() // Obrada SIGUSR1
-{ 
+{
     int tmp[5];
     int tmp2[6];
 
-    if(temp > T_P){
+    if (temp > T_P)
+    {
         stog[SP] = T_P;
         SP++;
         T_P = temp;
@@ -124,24 +137,31 @@ void selektor() // Obrada SIGUSR1
         obrada_prekida(T_P);
         SP--;
         T_P = stog[SP];
-        if(maxIndex(K_Z) + 1 > stog[SP]){
+        if (maxIndex(K_Z) + 1 > stog[SP])
+        {
             memcpy(tmp, K_Z, sizeof(K_Z));
             tmp[maxIndex(K_Z)] = 0;
             printer(tmp, maxIndex(K_Z) + 1, stog);
-        }else{
+        }
+        else
+        {
             stog[SP] = 0;
             printer(K_Z, T_P, stog);
             return;
         }
-        while(maxIndex(K_Z) + 1 > stog[SP]){
+        while (maxIndex(K_Z) + 1 > stog[SP])
+        {
             T_P = maxIndex(K_Z) + 1;
             obrada_prekida(maxIndex(K_Z) + 1);
             K_Z[maxIndex(K_Z)] = 0;
-            if(maxIndex(K_Z) + 1 > stog[SP]){
+            if (maxIndex(K_Z) + 1 > stog[SP])
+            {
                 memcpy(tmp, K_Z, sizeof(K_Z));
                 tmp[maxIndex(K_Z)] = 0;
                 printer(tmp, maxIndex(K_Z) + 1, stog);
-            }else{
+            }
+            else
+            {
                 T_P = stog[SP];
                 stog[SP] = 0;
                 printer(K_Z, T_P, stog);
@@ -149,12 +169,19 @@ void selektor() // Obrada SIGUSR1
         }
         stog[SP] = 0;
     }
-    else if(temp < T_P && T_P == maxIndex(K_Z) + 1){
+    else if (temp < T_P && T_P == maxIndex(K_Z) + 1)
+    {
         memcpy(tmp, K_Z, sizeof(K_Z));
         tmp[maxIndex(K_Z)] = 0;
         printer(tmp, maxIndex(K_Z) + 1, stog);
     }
-    else if(temp < T_P){
+    else if (temp < T_P)
+    {
+        K_Z[temp - 1] = 1;
+        printer(K_Z, T_P, stog);
+    }
+    else if (temp = T_P)
+    {
         K_Z[temp - 1] = 1;
         printer(K_Z, T_P, stog);
     }
